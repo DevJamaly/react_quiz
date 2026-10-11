@@ -1,6 +1,9 @@
 import { useEffect, useReducer } from 'react';
 import Header from './components/Header';
 import MainElement from './components/MainElement';
+import Loader from './components/Loader';
+import ErrorElement from './components/ErrorElement';
+import StartScreen from './components/StartScreen';
 
 interface StateData {
   questions: QuestionData[];
@@ -41,10 +44,12 @@ function reducer(state: StateData, action: Action): StateData {
 }
 
 function App() {
-  const [state, dispatch] = useReducer(reducer, initialState);
+  const [{ questions, status }, dispatch] = useReducer(reducer, initialState);
+
+  const numQuestions = questions.length;
 
   useEffect(() => {
-    fetch('http://localhost:8080/questionz')
+    fetch('http://localhost:8080/questions')
       .then(res => {
         if (!res.ok) throw new Error(`Error ${res.status}: ${res.statusText}`);
         return res.json();
@@ -62,7 +67,11 @@ function App() {
   return (
     <div className="app">
       <Header />
-      <MainElement />
+      <MainElement>
+        {status === 'loading' && <Loader />}
+        {status === 'error' && <ErrorElement />}
+        {status === 'ready' && <StartScreen numQuestions={numQuestions} />}
+      </MainElement>
     </div>
   );
 }
