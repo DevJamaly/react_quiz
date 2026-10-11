@@ -9,9 +9,11 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "format": "prettier --write .",
-    "check": "npx tsc --noEmit --watch"
+    "check": "npx tsc --noEmit --watch",
+    "server": "json-server --watch data/questions.json --port 8080"
   },
   "dependencies": {
+    "json-server": "^1.0.0-beta.15",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
