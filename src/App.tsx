@@ -9,9 +9,10 @@ import Question from './components/Question';
 interface StateData {
   questions: QuestionData[];
   status: 'loading' | 'error' | 'ready' | 'finished' | 'active';
+  index: number;
 }
 
-interface QuestionData {
+export interface QuestionData {
   correctOption: number;
   id: string;
   options: string[];
@@ -28,6 +29,7 @@ const initialState: StateData = {
   questions: [],
   // 'loading, 'error', 'ready', 'finished'
   status: 'loading',
+  index: 0,
 };
 
 function reducer(state: StateData, action: Action): StateData {
@@ -49,7 +51,10 @@ function reducer(state: StateData, action: Action): StateData {
 }
 
 function App() {
-  const [{ questions, status }, dispatch] = useReducer(reducer, initialState);
+  const [{ questions, status, index }, dispatch] = useReducer(
+    reducer,
+    initialState,
+  );
 
   const numQuestions = questions.length;
 
@@ -78,7 +83,7 @@ function App() {
         {status === 'ready' && (
           <StartScreen numQuestions={numQuestions} dispatch={dispatch} />
         )}
-        {status === 'active' && <Question />}
+        {status === 'active' && <Question question={questions[index]} />}
       </MainElement>
     </div>
   );
