@@ -10,6 +10,8 @@ interface StateData {
   questions: QuestionData[];
   status: 'loading' | 'error' | 'ready' | 'finished' | 'active';
   index: number;
+  answer: number;
+  points: number;
 }
 
 export interface QuestionData {
@@ -23,6 +25,7 @@ export interface QuestionData {
 export type Action =
   | { type: 'dataReceived'; payload: QuestionData[] }
   | { type: 'dataFailed'; payload: string }
+  | { type: 'newAnswer'; payload: number }
   | { type: 'start' };
 
 const initialState: StateData = {
@@ -30,6 +33,8 @@ const initialState: StateData = {
   // 'loading, 'error', 'ready', 'finished'
   status: 'loading',
   index: 0,
+  answer: -1,
+  points: 0,
 };
 
 function reducer(state: StateData, action: Action): StateData {
@@ -43,6 +48,15 @@ function reducer(state: StateData, action: Action): StateData {
     case 'start':
       return { ...state, status: 'active' };
 
+    case 'newAnswer':
+      const question = state.questions[state.index];
+      const isCorrect = action.payload === question.correctOption;
+      return {
+        ...state,
+        answer: action.payload,
+        points: state.points + (isCorrect ? question.points : 0),
+      };
+
     default: {
       const _exhaustive: never = action;
       throw new Error(`Unknown action: ${JSON.stringify(_exhaustive)}`);
@@ -51,7 +65,7 @@ function reducer(state: StateData, action: Action): StateData {
 }
 
 function App() {
-  const [{ questions, status, index }, dispatch] = useReducer(
+  const [{ questions, status, index, answer }, dispatch] = useReducer(
     reducer,
     initialState,
   );
@@ -83,7 +97,13 @@ function App() {
         {status === 'ready' && (
           <StartScreen numQuestions={numQuestions} dispatch={dispatch} />
         )}
-        {status === 'active' && <Question question={questions[index]} />}
+        {status === 'active' && (
+          <Question
+            question={questions[index]}
+            dispatch={dispatch}
+            answer={answer}
+          />
+        )}
       </MainElement>
     </div>
   );
