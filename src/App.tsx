@@ -7,6 +7,7 @@ import StartScreen from './components/StartScreen';
 import Question from './components/Question';
 import NextButton from './components/NextButton';
 import Progress from './components/Progress';
+import FinishScreen from './components/FinishScreen';
 
 interface StateData {
   questions: QuestionData[];
@@ -29,6 +30,7 @@ export type Action =
   | { type: 'dataFailed'; payload: string }
   | { type: 'newAnswer'; payload: number }
   | { type: 'start' }
+  | { type: 'finish' }
   | { type: 'nextQuestion' };
 
 const initialState: StateData = {
@@ -50,6 +52,8 @@ function reducer(state: StateData, action: Action): StateData {
 
     case 'start':
       return { ...state, status: 'active' };
+    case 'finish':
+      return { ...state, status: 'finished' };
 
     case 'newAnswer':
       const question = state.questions[state.index];
@@ -121,8 +125,16 @@ function App() {
               dispatch={dispatch}
               answer={answer}
             />
-            <NextButton dispatch={dispatch} answer={answer} />
+            <NextButton
+              dispatch={dispatch}
+              answer={answer}
+              index={index}
+              numQuestions={numQuestions}
+            />
           </>
+        )}
+        {status === 'finished' && (
+          <FinishScreen points={points} totalPoints={totalPoints} />
         )}
       </MainElement>
     </div>
