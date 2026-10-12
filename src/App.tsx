@@ -4,10 +4,11 @@ import MainElement from './components/MainElement';
 import Loader from './components/Loader';
 import ErrorElement from './components/ErrorElement';
 import StartScreen from './components/StartScreen';
+import Question from './components/Question';
 
 interface StateData {
   questions: QuestionData[];
-  status: 'loading' | 'error' | 'ready' | 'finished';
+  status: 'loading' | 'error' | 'ready' | 'finished' | 'active';
 }
 
 interface QuestionData {
@@ -18,9 +19,10 @@ interface QuestionData {
   question: string;
 }
 
-type Action =
+export type Action =
   | { type: 'dataReceived'; payload: QuestionData[] }
-  | { type: 'dataFailed'; payload: string };
+  | { type: 'dataFailed'; payload: string }
+  | { type: 'start' };
 
 const initialState: StateData = {
   questions: [],
@@ -35,6 +37,9 @@ function reducer(state: StateData, action: Action): StateData {
 
     case 'dataFailed':
       return { ...state, status: 'error' };
+
+    case 'start':
+      return { ...state, status: 'active' };
 
     default: {
       const _exhaustive: never = action;
@@ -70,7 +75,10 @@ function App() {
       <MainElement>
         {status === 'loading' && <Loader />}
         {status === 'error' && <ErrorElement />}
-        {status === 'ready' && <StartScreen numQuestions={numQuestions} />}
+        {status === 'ready' && (
+          <StartScreen numQuestions={numQuestions} dispatch={dispatch} />
+        )}
+        {status === 'active' && <Question />}
       </MainElement>
     </div>
   );
