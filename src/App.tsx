@@ -5,6 +5,7 @@ import Loader from './components/Loader';
 import ErrorElement from './components/ErrorElement';
 import StartScreen from './components/StartScreen';
 import Question from './components/Question';
+import NextButton from './components/NextButton';
 
 interface StateData {
   questions: QuestionData[];
@@ -26,7 +27,8 @@ export type Action =
   | { type: 'dataReceived'; payload: QuestionData[] }
   | { type: 'dataFailed'; payload: string }
   | { type: 'newAnswer'; payload: number }
-  | { type: 'start' };
+  | { type: 'start' }
+  | { type: 'nextQuestion' };
 
 const initialState: StateData = {
   questions: [],
@@ -56,6 +58,9 @@ function reducer(state: StateData, action: Action): StateData {
         answer: action.payload,
         points: state.points + (isCorrect ? question.points : 0),
       };
+
+    case 'nextQuestion':
+      return { ...state, index: state.index + 1, answer: -1 };
 
     default: {
       const _exhaustive: never = action;
@@ -98,11 +103,14 @@ function App() {
           <StartScreen numQuestions={numQuestions} dispatch={dispatch} />
         )}
         {status === 'active' && (
-          <Question
-            question={questions[index]}
-            dispatch={dispatch}
-            answer={answer}
-          />
+          <>
+            <Question
+              question={questions[index]}
+              dispatch={dispatch}
+              answer={answer}
+            />
+            <NextButton dispatch={dispatch} answer={answer} />
+          </>
         )}
       </MainElement>
     </div>
