@@ -15,6 +15,7 @@ interface StateData {
   index: number;
   answer: number;
   points: number;
+  highscore: number;
 }
 
 export interface QuestionData {
@@ -40,6 +41,7 @@ const initialState: StateData = {
   index: 0,
   answer: -1,
   points: 0,
+  highscore: 0,
 };
 
 function reducer(state: StateData, action: Action): StateData {
@@ -53,7 +55,9 @@ function reducer(state: StateData, action: Action): StateData {
     case 'start':
       return { ...state, status: 'active' };
     case 'finish':
-      return { ...state, status: 'finished' };
+      const hscore =
+        state.points > state.highscore ? state.points : state.highscore;
+      return { ...state, status: 'finished', highscore: hscore };
 
     case 'newAnswer':
       const question = state.questions[state.index];
@@ -75,10 +79,8 @@ function reducer(state: StateData, action: Action): StateData {
 }
 
 function App() {
-  const [{ questions, status, index, answer, points }, dispatch] = useReducer(
-    reducer,
-    initialState,
-  );
+  const [{ questions, status, index, answer, points, highscore }, dispatch] =
+    useReducer(reducer, initialState);
 
   const numQuestions = questions.length;
   const totalPoints = questions.reduce(
@@ -134,7 +136,11 @@ function App() {
           </>
         )}
         {status === 'finished' && (
-          <FinishScreen points={points} totalPoints={totalPoints} />
+          <FinishScreen
+            points={points}
+            totalPoints={totalPoints}
+            highscore={highscore}
+          />
         )}
       </MainElement>
     </div>
