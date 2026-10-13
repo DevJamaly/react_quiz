@@ -1,7 +1,10 @@
+import type { Action } from '../App';
+
 interface FinishScreenProps {
   points: number;
   totalPoints: number;
   highscore: number;
+  dispatch: (dispatch: Action) => void;
 }
 
 const SCORE_EMOJIS = [
@@ -15,17 +18,28 @@ function getEmoji(percentage: number) {
   return SCORE_EMOJIS.find(({ min }) => percentage >= min)?.emoji ?? '🤕';
 }
 
-function FinishScreen({ points, totalPoints, highscore }: FinishScreenProps) {
+function FinishScreen({
+  points,
+  totalPoints,
+  highscore,
+  dispatch,
+}: FinishScreenProps) {
   const percentage = (points / totalPoints) * 100;
 
   return (
-    <div className="result">
-      <p>
+    <div>
+      <p className="result">
         <span>{getEmoji(percentage)}</span>
         You scored <strong>{points}</strong> out of {totalPoints} (
         {Math.ceil(percentage)}%)
       </p>
       <p className="highscore">(Highscore: {highscore} points)</p>
+      <button
+        className="btn btn-ui"
+        onClick={() => dispatch({ type: 'restart' })}
+      >
+        RESTART QUIZ
+      </button>
     </div>
   );
 }

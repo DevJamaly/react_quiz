@@ -32,7 +32,8 @@ export type Action =
   | { type: 'newAnswer'; payload: number }
   | { type: 'start' }
   | { type: 'finish' }
-  | { type: 'nextQuestion' };
+  | { type: 'nextQuestion' }
+  | { type: 'restart' };
 
 const initialState: StateData = {
   questions: [],
@@ -54,6 +55,10 @@ function reducer(state: StateData, action: Action): StateData {
 
     case 'start':
       return { ...state, status: 'active' };
+
+    case 'restart':
+      return { ...initialState, status: 'ready', questions: state.questions };
+
     case 'finish':
       const hscore =
         state.points > state.highscore ? state.points : state.highscore;
@@ -140,6 +145,7 @@ function App() {
             points={points}
             totalPoints={totalPoints}
             highscore={highscore}
+            dispatch={dispatch}
           />
         )}
       </MainElement>
