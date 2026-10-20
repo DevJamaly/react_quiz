@@ -8,6 +8,8 @@ import Question from './components/Question';
 import NextButton from './components/NextButton';
 import Progress from './components/Progress';
 import FinishScreen from './components/FinishScreen';
+import Footer from './components/Footer';
+import Timer from './components/Timer';
 
 interface StateData {
   questions: QuestionData[];
@@ -16,6 +18,7 @@ interface StateData {
   answer: number;
   points: number;
   highscore: number;
+  secondsRemaining: number;
 }
 
 export interface QuestionData {
@@ -33,7 +36,8 @@ export type Action =
   | { type: 'start' }
   | { type: 'finish' }
   | { type: 'nextQuestion' }
-  | { type: 'restart' };
+  | { type: 'restart' }
+  | { type: 'tick' };
 
 const initialState: StateData = {
   questions: [],
@@ -43,7 +47,18 @@ const initialState: StateData = {
   answer: -1,
   points: 0,
   highscore: 0,
+  secondsRemaining: -1,
 };
+
+const SEC_PER_QUESTION = 5;
+
+function finishQuiz(state: StateData): StateData {
+  return {
+    ...state,
+    status: 'finished',
+    highscore: Math.max(state.points, state.highscore),
+  };
+}
 
 function reducer(state: StateData, action: Action): StateData {
   switch (action.type) {
@@ -54,15 +69,17 @@ function reducer(state: StateData, action: Action): StateData {
       return { ...state, status: 'error' };
 
     case 'start':
-      return { ...state, status: 'active' };
+      return {
+        ...state,
+        status: 'active',
+        secondsRemaining: state.questions.length * SEC_PER_QUESTION,
+      };
 
     case 'restart':
       return { ...initialState, status: 'ready', questions: state.questions };
 
     case 'finish':
-      const hscore =
-        state.points > state.highscore ? state.points : state.highscore;
-      return { ...state, status: 'finished', highscore: hscore };
+      return finishQuiz(state);
 
     case 'newAnswer':
       const question = state.questions[state.index];
@@ -75,6 +92,14 @@ function reducer(state: StateData, action: Action): StateData {
 
     case 'nextQuestion':
       return { ...state, index: state.index + 1, answer: -1 };
+    case 'tick':
+      const secondsRemaining = state.secondsRemaining - 1;
+      return secondsRemaining > 0
+        ? { ...state, secondsRemaining }
+        : finishQuiz({
+            ...state,
+            secondsRemaining: 0,
+          });
 
     default: {
       const _exhaustive: never = action;
@@ -84,8 +109,10 @@ function reducer(state: StateData, action: Action): StateData {
 }
 
 function App() {
-  const [{ questions, status, index, answer, points, highscore }, dispatch] =
-    useReducer(reducer, initialState);
+  const [
+    { questions, status, index, answer, points, highscore, secondsRemaining },
+    dispatch,
+  ] = useReducer(reducer, initialState);
 
   const numQuestions = questions.length;
   const totalPoints = questions.reduce(
@@ -132,14 +159,15 @@ function App() {
               dispatch={dispatch}
               answer={answer}
             />
-            <footer>
+            <Footer>
+              <Timer secondsRemaining={secondsRemaining} dispatch={dispatch} />
               <NextButton
                 dispatch={dispatch}
                 answer={answer}
                 index={index}
                 numQuestions={numQuestions}
               />
-            </footer>
+            </Footer>
           </>
         )}
         {status === 'finished' && (
